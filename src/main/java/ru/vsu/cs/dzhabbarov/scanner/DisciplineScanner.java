@@ -6,6 +6,7 @@ import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import ru.vsu.cs.dzhabbarov.scanner.records.Discipline;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,15 +19,16 @@ import java.util.Set;
 public class DisciplineScanner {
 
     private static final Set<String> CHOOSE_DISCIPLINE_INDEXES = Set.of("Б1.В.ДВ.01", "Б1.В.ДВ.02", "Б1.В.ДВ.03", "Б1.В.ДВ.04", "Б1.В.ДВ.05", "Б1.В.ДВ.06");
-    private static final Set<String> SKIP_DISCIPLINE_INDEXES = Set.of("Б2.О.01(У)", "Б2.О.02(Н)", "Б2.В.01(П)", "Б2.В.02(Н)", "Б3.01(Д)");
+    private static final Set<String> SKIP_DISCIPLINE_INDEXES = Set.of("Б2.О.01(У)", "Б2.О.02(Н)", "Б2.В.01(П)", "Б2.В.02(Н)", "Б3.01(Д)", "Б1.В.ДВ.07");
 
     private static final String COMPETITION = "Компетенции(2)";
-    private static final String INDEX = "Индекс";
     private static final int ROOT_INDEX_COLUMN = 0;
     private static final int SUB_ROOT_INDEX_COLUMN = 1;
     private static final int INDEX_COLUMN = 2;
     private static final int DISCIPLINE_NAME_COLUMN = 5;
     private static final int COMPETITIONS_COLUMN = 6;
+    private static final int BOUND_ROW = 74;
+
 
     private final Workbook excelFile;
     private final Map<CompetitionPair, List<CompetitionPair>> competitionPairListMap;
@@ -54,6 +56,9 @@ public class DisciplineScanner {
             boolean isChosenDiscipline = false;
             for (Row row : sheet) {
                 // Не обрабатываем случаи Б1 (rootIndex), Б1.О (subRootIndex)
+                if (row.getRowNum() >= BOUND_ROW) {
+                    break;
+                }
                 Cell rootCell = row.getCell(ROOT_INDEX_COLUMN);
                 Cell subRootCell = row.getCell(SUB_ROOT_INDEX_COLUMN);
                 if (rootCell.getCellType() == CellType.STRING || subRootCell.getCellType() == CellType.STRING) {
@@ -97,7 +102,4 @@ public class DisciplineScanner {
         }
     }
 
-    public record Discipline(String index, String disciplineName,
-                             Map<CompetitionPair, List<CompetitionPair>> competitionPairListMap) {
-    }
 }

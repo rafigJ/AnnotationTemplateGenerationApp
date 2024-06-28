@@ -15,7 +15,7 @@ import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
-public class CompetitionScanner {
+class CompetitionScanner {
 
     private static final String COMPETITION = "Компетенции";
     private static final String INDEX = "Индекс";
@@ -30,8 +30,8 @@ public class CompetitionScanner {
         Sheet sheet = excelFile.getSheet(COMPETITION);
         if (sheet == null) {
             log.warn("sheet is null");
+            throw new NullPointerException("sheet is null");
         }
-        assert sheet != null;
         try {
             boolean isPc = false;
             for (Row row : sheet) {
