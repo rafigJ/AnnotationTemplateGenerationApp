@@ -4,5 +4,5 @@ import ru.vsu.cs.dzhabbarov.scanner.enums.AttestationType;
 
 import java.util.List;
 
-public record DisciplinePlanInfo(int intensity, List<AttestationType> attestationTypeList) {
+public record DisciplinePlanInfo(Integer intensity, List<AttestationType> attestationTypeList) {
 }

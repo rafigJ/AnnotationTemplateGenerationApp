@@ -29,7 +29,7 @@ public class PlanScanner {
     private static final int CREDIT_WITH_ASSESSMENT_COLUMN = 10;
     private static final int INTENSITY_COLUMN = 20;
 
-    private static final int BOUND_ROW = 63;
+    private static final int BOUND_ROW = 64;
     private static final Set<String> SKIP_ROW_NAMES = Set.of("-", "Наименование");
 
     public Map<String, DisciplinePlanInfo> getDisciplinePlanInfoMap() {
@@ -46,7 +46,7 @@ public class PlanScanner {
                 }
                 Cell nameCell = row.getCell(DISCIPLINE_NAME_COLUMN);
                 String disciplineName = nameCell.getStringCellValue();
-                if (SKIP_ROW_NAMES.contains(disciplineName)) {
+                if (nameCell.getCellType() != CellType.STRING || SKIP_ROW_NAMES.contains(disciplineName)) {
                     continue;
                 }
                 List<AttestationType> attestationTypeList = new ArrayList<>();
@@ -59,7 +59,16 @@ public class PlanScanner {
                 if (row.getCell(CREDIT_WITH_ASSESSMENT_COLUMN).getCellType() == CellType.STRING) {
                     attestationTypeList.add(AttestationType.CREDIT_WITH_ASSESSMENT);
                 }
-                int intensity = (int) row.getCell(INTENSITY_COLUMN).getNumericCellValue();
+                var cell = row.getCell(INTENSITY_COLUMN);
+
+                var value = cell.getStringCellValue();
+                Integer intensity;
+                if (value != null && value.isBlank()) {
+                    intensity = null;
+                } else {
+                    assert value != null;
+                    intensity = Integer.parseInt(value);
+                }
                 result.put(disciplineName, new DisciplinePlanInfo(intensity, attestationTypeList));
             }
         } catch (NullPointerException e) {
