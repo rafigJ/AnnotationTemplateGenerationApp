@@ -1,10 +1,6 @@
-package ru.vsu.cs.dzhabbarov;
+package ru.vsu.cs.dzhabbarov.scanner;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -28,7 +24,6 @@ public class CompetitionScanner {
     private static final int INDEX_COLUMN = 1;
     private static final int CONTENT_COLUMN = 4;
     private final Workbook excelFile;
-
 
     public Map<CompetitionPair, List<CompetitionPair>> getCompetitionMap() {
         Map<CompetitionPair, List<CompetitionPair>> result = new HashMap<>();
@@ -71,18 +66,6 @@ public class CompetitionScanner {
             throw new RuntimeException(e);
         }
         return result;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @EqualsAndHashCode
-    @ToString
-    public static class CompetitionPair {
-
-        private String index;
-
-        @EqualsAndHashCode.Exclude
-        private String content;
     }
 
 }
