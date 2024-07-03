@@ -41,42 +41,38 @@ import static ru.vsu.cs.dzhabbarov.AnnotationConst.TOTAL_LABOR_INTENSITY;
 public class AnnotationBuilder {
 
     private final Workbook excelFile;
+    private final Workbook goalExcelFile;
     private final List<LogEntry> logEntries = new ArrayList<>();
 
     public void build(Path outputPath) {
-        try (Workbook workbook = new XSSFWorkbook(Objects.requireNonNull(this.getClass().getClassLoader().getResourceAsStream("goals.xlsx")))) {
+        List<Discipline> disciplineList = new DisciplineScanner(excelFile).getDisciplineList();
+        Map<String, DisciplinePlanInfo> disciplonePlanMap = new PlanScanner(excelFile).getDisciplinePlanInfoMap();
+        Map<String, String> goals = new GoalsScanner(goalExcelFile).getIndexGoalsMap();
 
-            List<Discipline> disciplineList = new DisciplineScanner(excelFile).getDisciplineList();
-            Map<String, DisciplinePlanInfo> disciplonePlanMap = new PlanScanner(excelFile).getDisciplinePlanInfoMap();
-            Map<String, String> goals = new GoalsScanner(workbook).getIndexGoalsMap();
+        logAndStore(ParagraphAlignment.CENTER, false, 0, boldText(HEADER));
 
-            logAndStore(ParagraphAlignment.CENTER, false, 0, boldText(HEADER));
-
-            for (Discipline discipline : disciplineList) {
-                logAndStore(ParagraphAlignment.CENTER, false, 0, boldText(discipline.index() + " " + discipline.name()));
-                DisciplinePlanInfo info = disciplonePlanMap.get(discipline.name());
-                String intensity = info.intensity() == null ? "x/328" : info.intensity() + INTENSITY_METRIC;
-                logAndStore(ParagraphAlignment.LEFT, false, 0, text(TOTAL_LABOR_INTENSITY + intensity));
-                logAndStore(ParagraphAlignment.LEFT, false, 0, italicText(DISCIPLINE_AIM_TO));
-                var competitionPairListMap = discipline.competitionPairListMap();
-                for (Map.Entry<CompetitionPair, List<CompetitionPair>> entry : competitionPairListMap.entrySet()) {
-                    var rootPair = entry.getKey();
-                    logAndStore(ParagraphAlignment.LEFT, false, 1, text("%s. %s".formatted(rootPair.getIndex(), rootPair.getContent())));
-                    for (CompetitionPair subPair : entry.getValue()) {
-                        char dash = '-';
-                        logAndStore(ParagraphAlignment.LEFT, true, 2, text("%s %s. %s".formatted(dash, subPair.getIndex(), subPair.getContent())));
-                    }
+        for (Discipline discipline : disciplineList) {
+            logAndStore(ParagraphAlignment.CENTER, false, 0, boldText(discipline.index() + " " + discipline.name()));
+            DisciplinePlanInfo info = disciplonePlanMap.get(discipline.name());
+            String intensity = info.intensity() == null ? "x/328" : info.intensity() + INTENSITY_METRIC;
+            logAndStore(ParagraphAlignment.LEFT, false, 0, text(TOTAL_LABOR_INTENSITY + intensity));
+            logAndStore(ParagraphAlignment.LEFT, false, 0, italicText(DISCIPLINE_AIM_TO));
+            var competitionPairListMap = discipline.competitionPairListMap();
+            for (Map.Entry<CompetitionPair, List<CompetitionPair>> entry : competitionPairListMap.entrySet()) {
+                var rootPair = entry.getKey();
+                logAndStore(ParagraphAlignment.LEFT, false, 1, text("%s. %s".formatted(rootPair.getIndex(), rootPair.getContent())));
+                for (CompetitionPair subPair : entry.getValue()) {
+                    char dash = '-';
+                    logAndStore(ParagraphAlignment.LEFT, true, 2, text("%s %s. %s".formatted(dash, subPair.getIndex(), subPair.getContent())));
                 }
-
-                logAndStore(ParagraphAlignment.LEFT, false, 0, boldText(PLACE_ACADEMIC_DISCIPLINE), text(ACADEMIC_DISCIPLINE_REFER_TO + REFERS_TO_B1));
-                logAndStore(ParagraphAlignment.LEFT, false, 0, boldText(GOALS_AND_OBJECTIVES), text(goals.getOrDefault(discipline.index(), "")));
-                var collectedAttestationForm = info.attestationTypeList().stream().map(AttestationType::getTypeName).collect(Collectors.joining(", "));
-                logAndStore(ParagraphAlignment.LEFT, false, 0, boldText(ATTESTATION_FORM), text(collectedAttestationForm + "."));
             }
-            writeLogsToWordFile(outputPath);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+
+            logAndStore(ParagraphAlignment.LEFT, false, 0, boldText(PLACE_ACADEMIC_DISCIPLINE), text(ACADEMIC_DISCIPLINE_REFER_TO + REFERS_TO_B1));
+            logAndStore(ParagraphAlignment.LEFT, false, 0, boldText(GOALS_AND_OBJECTIVES), text(goals.getOrDefault(discipline.index(), "")));
+            var collectedAttestationForm = info.attestationTypeList().stream().map(AttestationType::getTypeName).collect(Collectors.joining(", "));
+            logAndStore(ParagraphAlignment.LEFT, false, 0, boldText(ATTESTATION_FORM), text(collectedAttestationForm + "."));
         }
+        writeLogsToWordFile(outputPath);
     }
 
     private void logAndStore(ParagraphAlignment alignment, boolean listItem, int indentationLevel, StyledText... message) {
